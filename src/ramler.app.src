@@ -1,0 +1,15 @@
+%% -*- erlang -*-
+{application, ramler,
+ [{description, "Project_Name Example"},
+  {vsn, "0.1.0"},
+  {registered, [ramler_sup]},
+  {mod, {ramler_app, []}},
+  {start_phases, []},
+  {applications, [
+                 kernel
+                 ,stdlib
+                 ,sasl
+                 ,lager
+                 ]},
+  {env, []}
+ ]}.
