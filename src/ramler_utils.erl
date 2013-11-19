@@ -1,15 +1,15 @@
 -module(ramler_utils).
 
--export([request/6]).
+-export([request/7]).
 
-request(HttpMethod, Host, Endpoint, Required, Optional, QueryParams) ->
+request(HttpMethod, Host, Endpoint, Required, Optional, QueryParams, Headers) ->
     Path = lists:foldl(fun({K, V}, Acc) ->
                                binary:replace(Acc, <<"{", K/binary, "}">>, V)
                        end, Endpoint, Required),
     OptionalParams = build_qs(Optional, QueryParams),
     do(HttpMethod,
        Host,
-       <<Path/binary, "?" , OptionalParams/binary>>, [], []).
+       <<Path/binary, "?" , OptionalParams/binary>>, Headers, []).
 
 do(Method, Url, Path, Headers, Body) ->
     {ok, Status, _RespHeaders, Client}

@@ -17,6 +17,9 @@ gen_client(Prefix, Spec) ->
     {ok, [Raml]} = yaml:load_file(Spec, [implicit_atoms]),
     {Root, Endpoints} = split_options(Raml),
     BaseUri = proplists:get_value(baseUri, Root, ""),
+    [{oauth_2_0, SecScheme}] = hd(proplists:get_value(securitySchemes, Root, [])),
+    SecBy = proplists:get_value(describedBy, SecScheme, []),
+    [{AuthHeader, _}] = proplists:get_value(headers, SecBy, []),
     lists:map(fun([{<<"/", Endpoint/binary>>, Rest}]) ->
                       ModuleName = binary_to_atom(<<Prefix/binary, "_", Endpoint/binary>>, latin1),
                       {Config, SubEndpoints} = split_options(Rest),
@@ -55,7 +58,8 @@ gen_methods(BaseUri, Endpoint, [{Method, Options} | T], {ExportAcc, MethodAcc}) 
     Exports = [{Method, length(UriParams)}, {Method, length(UriParams)+1}],
     Funs = codegen:gen_function(MethodInternal,
                                 fun(Required, Optional) ->
-                                        ramler_utils:request({'$var', Method}, {'$var', BaseUri}, {'$var', Endpoint}, Required, Optional, {'$var', QueryParams})
+                                        {ok, Token} = application:get_env(ramler, token),
+                                        ramler_utils:request({'$var', Method}, {'$var', BaseUri}, {'$var', Endpoint}, Required, Optional, {'$var', QueryParams}, [{<<"Authorization">>, <<"token ", Token/binary>>}])
                                 end),
     gen_methods(BaseUri, Endpoint, T, {Exports++ExportAcc, [Funs | ExportedFuns]++MethodAcc}).
 

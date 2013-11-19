@@ -3,6 +3,13 @@
 title: GitHub API
 version: v3
 baseUri: https://api.github.com
+securitySchemes:
+    - oauth_2_0:
+        type: OAuth 2.0
+        describedBy:
+            headers:
+                Authorization:
+                    type: string
 /user:
   get:
     responses:
